@@ -1,0 +1,368 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>WAL 2026 - Schedule & Live Points Table</title>
+<style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap');
+
+    :root {
+        --primary: #00f5ff;
+        --accent: #ff2e63;
+        --dark: #0a0f1c;
+        --card: #121a2e;
+    }
+
+    * { margin:0; padding:0; box-sizing:border-box; }
+    body {
+        font-family: 'Inter', sans-serif;
+        background: radial-gradient(circle at center, #1a2338 0%, #0a0f1c 80%);
+        color: #e0f2fe;
+        min-height: 100vh;
+    }
+
+    .header {
+        background: rgba(10,15,28,0.95);
+        backdrop-filter: blur(20px);
+        border-bottom: 1px solid rgba(0,245,255,0.3);
+        padding: 18px 25px;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        position: sticky;
+        top: 0;
+        z-index: 1000;
+    }
+
+    .logo {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 28px;
+        font-weight: 700;
+        background: linear-gradient(90deg, #00f5ff, #ff2e63);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+    }
+
+    .container {
+        max-width: 1350px;
+        margin: 25px auto;
+        padding: 0 15px;
+    }
+
+    .box {
+        background: var(--card);
+        border-radius: 20px;
+        border: 1px solid rgba(0,245,255,0.2);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        margin-bottom: 30px;
+        overflow: hidden;
+    }
+
+    .box-header {
+        background: linear-gradient(135deg, rgba(0,245,255,0.15), rgba(255,46,99,0.1));
+        padding: 20px 25px;
+        font-family: 'Orbitron', sans-serif;
+        font-size: 21px;
+        color: var(--primary);
+        border-bottom: 1px solid rgba(0,245,255,0.2);
+    }
+
+    .match-card {
+        background: #1e2937;
+        margin: 15px;
+        padding: 20px;
+        border-radius: 16px;
+        border-left: 6px solid var(--primary);
+    }
+
+    .match-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 15px;
+        font-size: 17px;
+        font-weight: 600;
+    }
+
+    .vs {
+        color: var(--accent);
+        font-weight: 700;
+    }
+
+    .score-input {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        margin: 12px 0;
+    }
+
+    .score-input input {
+        width: 80px;
+        padding: 10px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        color: white;
+        border-radius: 8px;
+        text-align: center;
+        font-size: 16px;
+    }
+
+    .win-btn {
+        padding: 10px 20px;
+        font-size: 15px;
+        font-weight: 700;
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: white;
+        margin-top: 8px;
+    }
+
+    .win-btn.team1 { background: #22c55e; }
+    .win-btn.team2 { background: #3b82f6; }
+
+    .win-btn:hover:not(:disabled) {
+        transform: scale(1.05);
+    }
+
+    .win-btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .win-btn.winner {
+        background: #eab308;
+        color: black;
+        box-shadow: 0 0 15px #eab308;
+    }
+
+    table {
+        width: 100%;
+        border-collapse: collapse;
+    }
+
+    th, td {
+        padding: 16px 20px;
+        text-align: left;
+    }
+
+    th {
+        background: #1e2937;
+        color: var(--primary);
+        font-weight: 600;
+    }
+
+    tr:hover {
+        background: rgba(0, 245, 255, 0.08);
+    }
+
+    .position {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 20px;
+        font-weight: 700;
+        color: #67e8f9;
+    }
+
+    .team-name {
+        font-weight: 600;
+    }
+
+    .win { color: #22c55e; font-weight: 600; }
+    .loss { color: #ef4444; }
+</style>
+</head>
+<body>
+
+<div class="header">
+    <div class="logo">WAL 2026</div>
+    <div style="font-size:18px; font-weight:600;">Live Match Scoring & Points Table</div>
+</div>
+
+<div class="container">
+
+    <!-- Schedule -->
+    <div class="box">
+        <div class="box-header">📅 MATCH SCHEDULE (Click Win after entering score)</div>
+        <div id="schedule"></div>
+    </div>
+
+    <!-- Points Table -->
+    <div class="box">
+        <div class="box-header">🏆 LIVE POINTS TABLE</div>
+        <table>
+            <thead>
+                <tr>
+                    <th>Pos</th>
+                    <th>Team</th>
+                    <th>Played</th>
+                    <th>Won</th>
+                    <th>Lost</th>
+                    <th>Runs Scored</th>
+                    <th>Points</th>
+                    <th>NRR</th>
+                </tr>
+            </thead>
+            <tbody id="pointsBody"></tbody>
+        </table>
+    </div>
+
+</div>
+
+<script>
+// Teams
+const teams = ["Dragon Hunters", "Blaze Warriors", "Tiger Titans", "Shadow Ninjas", "Phantom Raiders", "Thunder Legends"];
+
+// Matches
+let matches = [
+    {id:1, team1: "Dragon Hunters", team2: "Blaze Warriors", winner: null, runs1: 0, runs2: 0},
+    {id:2, team1: "Tiger Titans", team2: "Shadow Ninjas", winner: null, runs1: 0, runs2: 0},
+    {id:3, team1: "Phantom Raiders", team2: "Thunder Legends", winner: null, runs1: 0, runs2: 0},
+    {id:4, team1: "Dragon Hunters", team2: "Tiger Titans", winner: null, runs1: 0, runs2: 0},
+    {id:5, team1: "Blaze Warriors", team2: "Phantom Raiders", winner: null, runs1: 0, runs2: 0},
+    {id:6, team1: "Shadow Ninjas", team2: "Thunder Legends", winner: null, runs1: 0, runs2: 0},
+    {id:7, team1: "Dragon Hunters", team2: "Phantom Raiders", winner: null, runs1: 0, runs2: 0},
+    {id:8, team1: "Blaze Warriors", team2: "Tiger Titans", winner: null, runs1: 0, runs2: 0},
+    {id:9, team1: "Shadow Ninjas", team2: "Dragon Hunters", winner: null, runs1: 0, runs2: 0},
+    {id:10, team1: "Thunder Legends", team2: "Blaze Warriors", winner: null, runs1: 0, runs2: 0},
+    {id:11, team1: "Tiger Titans", team2: "Phantom Raiders", winner: null, runs1: 0, runs2: 0},
+    {id:12, team1: "Thunder Legends", team2: "Dragon Hunters", winner: null, runs1: 0, runs2: 0},
+    {id:13, team1: "Shadow Ninjas", team2: "Blaze Warriors", winner: null, runs1: 0, runs2: 0},
+    {id:14, team1: "Tiger Titans", team2: "Thunder Legends", winner: null, runs1: 0, runs2: 0},
+    {id:15, team1: "Phantom Raiders", team2: "Shadow Ninjas", winner: null, runs1: 0, runs2: 0},
+    {id:16, team1: "Dragon Hunters", team2: "Thunder Legends", winner: null, runs1: 0, runs2: 0},
+    {id:17, team1: "Blaze Warriors", team2: "Shadow Ninjas", winner: null, runs1: 0, runs2: 0},
+    {id:18, team1: "Tiger Titans", team2: "Phantom Raiders", winner: null, runs1: 0, runs2: 0}
+];
+
+let pointsData = {};
+
+function initPointsData() {
+    teams.forEach(team => {
+        pointsData[team] = { played: 0, won: 0, lost: 0, runsScored: 0, points: 0, nrr: (Math.random()*1.5-0.5).toFixed(2) };
+    });
+}
+
+function renderSchedule() {
+    const container = document.getElementById("schedule");
+    container.innerHTML = "";
+
+    matches.forEach(match => {
+        const card = document.createElement("div");
+        card.className = "match-card";
+        card.innerHTML = `
+            <div class="match-header">
+                <span>${match.team1}</span>
+                <span class="vs">VS</span>
+                <span>${match.team2}</span>
+            </div>
+
+            <div class="score-input">
+                <span>${match.team1} Runs:</span>
+                <input type="number" id="runs1-${match.id}" value="${match.runs1}" 
+                       onchange="updateRuns(${match.id}, 1, this.value)" placeholder="Runs">
+            </div>
+
+            <div class="score-input">
+                <span>${match.team2} Runs:</span>
+                <input type="number" id="runs2-${match.id}" value="${match.runs2}" 
+                       onchange="updateRuns(${match.id}, 2, this.value)" placeholder="Runs">
+            </div>
+
+            <div style="display:flex; gap:12px; margin-top:10px;">
+                <button class="win-btn team1" id="btn1-${match.id}" 
+                        onclick="declareWinner(${match.id}, '${match.team1}')">
+                    ${match.team1} Wins
+                </button>
+                <button class="win-btn team2" id="btn2-${match.id}" 
+                        onclick="declareWinner(${match.id}, '${match.team2}')">
+                    ${match.team2} Wins
+                </button>
+            </div>
+        `;
+        container.appendChild(card);
+    });
+}
+
+function updateRuns(matchId, teamSide, value) {
+    const match = matches.find(m => m.id === matchId);
+    if (!match) return;
+
+    const runs = parseInt(value) || 0;
+    if (teamSide === 1) match.runs1 = runs;
+    else match.runs2 = runs;
+}
+
+function declareWinner(matchId, winnerTeam) {
+    const match = matches.find(m => m.id === matchId);
+    if (!match || match.winner) return;
+
+    match.winner = winnerTeam;
+
+    const loser = winnerTeam === match.team1 ? match.team2 : match.team1;
+
+    // Update Points
+    pointsData[winnerTeam].played++;
+    pointsData[winnerTeam].won++;
+    pointsData[winnerTeam].points += 2;
+    pointsData[winnerTeam].runsScored += (winnerTeam === match.team1 ? match.runs1 : match.runs2);
+
+    pointsData[loser].played++;
+    pointsData[loser].lost++;
+    pointsData[loser].runsScored += (loser === match.team1 ? match.runs1 : match.runs2);
+
+    // Disable both buttons & highlight winner
+    const btn1 = document.getElementById(`btn1-${matchId}`);
+    const btn2 = document.getElementById(`btn2-${matchId}`);
+
+    btn1.disabled = true;
+    btn2.disabled = true;
+
+    if (winnerTeam === match.team1) {
+        btn1.classList.add("winner");
+    } else {
+        btn2.classList.add("winner");
+    }
+
+    renderPointsTable();
+}
+
+function renderPointsTable() {
+    let data = teams.map(team => ({
+        team: team,
+        ...pointsData[team]
+    }));
+
+    data.sort((a, b) => {
+        if (b.points !== a.points) return b.points - a.points;
+        return b.runsScored - a.runsScored;
+    });
+
+    const tbody = document.getElementById("pointsBody");
+    tbody.innerHTML = "";
+
+    data.forEach((item, i) => {
+        const row = document.createElement("tr");
+        row.innerHTML = `
+            <td><span class="position">${i+1}</span></td>
+            <td class="team-name">${item.team}</td>
+            <td>${item.played}</td>
+            <td class="win">${item.won}</td>
+            <td class="loss">${item.lost}</td>
+            <td>${item.runsScored}</td>
+            <td style="font-weight:700; color:#67e8f9;">${item.points}</td>
+            <td>${item.nrr}</td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// Initialize
+window.onload = function() {
+    initPointsData();
+    renderSchedule();
+    renderPointsTable();
+};
+</script>
+</body>
+</html>
