@@ -6,14 +6,12 @@
 <title>WAL - Team Score Panel</title>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap');
-
     :root {
         --primary: #00f5ff;
         --accent: #ff2e63;
         --dark: #0a0f1c;
         --card: #121a2e;
     }
-
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
         font-family: 'Inter', sans-serif;
@@ -22,7 +20,6 @@
         min-height: 100vh;
         padding-bottom: 80px;
     }
-
     .header {
         background: rgba(10,15,28,0.95);
         backdrop-filter: blur(20px);
@@ -35,7 +32,6 @@
         top: 0;
         z-index: 1000;
     }
-
     .logo {
         font-family: 'Orbitron', sans-serif;
         font-size: 24px;
@@ -44,13 +40,11 @@
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
     }
-
     .container {
         max-width: 1100px;
         margin: 20px auto;
         padding: 0 15px;
     }
-
     .box {
         background: var(--card);
         border-radius: 20px;
@@ -59,7 +53,6 @@
         overflow: hidden;
         margin-bottom: 20px;
     }
-
     .box-header {
         background: linear-gradient(135deg, rgba(0,245,255,0.15), rgba(255,46,99,0.1));
         padding: 18px 22px;
@@ -68,14 +61,12 @@
         color: var(--primary);
         border-bottom: 1px solid rgba(0,245,255,0.2);
     }
-
     .team-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
         gap: 15px;
         padding: 20px;
     }
-
     .team-card {
         background: #1e2937;
         border-radius: 16px;
@@ -84,64 +75,53 @@
         transition: all 0.3s;
         border: 2px solid transparent;
     }
-
     .team-card:hover, .team-card.active {
         border-color: #00f5ff;
         transform: scale(1.03);
     }
-
     .team-name {
         font-size: 18px;
         font-weight: 600;
         margin-bottom: 8px;
     }
-
     .scoring-table {
         padding: 20px;
         overflow-x: auto;
     }
-
     table {
         width: 100%;
         border-collapse: collapse;
-        min-width: 850px;
+        min-width: 820px;
     }
-
     th, td {
         padding: 14px 10px;
         text-align: left;
         border-bottom: 1px solid rgba(148,163,184,0.2);
     }
-
     th {
         background: #1e2937;
         color: var(--primary);
         font-weight: 600;
     }
-
     .player-name {
         font-weight: 600;
         font-size: 15.5px;
     }
-
     .role {
         padding: 5px 12px;
         border-radius: 20px;
         font-size: 12px;
         font-weight: 600;
     }
-
     .BAT { background: #3b82f6; color: white; }
     .BALL { background: #ef4444; color: white; }
     .ALL { background: #eab308; color: black; }
 
-    /* Quick Action Buttons */
     .action-btns {
         display: flex;
         gap: 6px;
         flex-wrap: wrap;
     }
-
     .action-btn {
         padding: 8px 14px;
         font-size: 14px;
@@ -151,25 +131,27 @@
         cursor: pointer;
         color: white;
         transition: all 0.2s;
-        min-width: 48px;
+        min-width: 55px;
         text-align: center;
     }
-
     .btn-1 { background: #3b82f6; }
     .btn-4 { background: #eab308; }
     .btn-6 { background: #22c55e; }
-    .btn-dot { background: #64748b; }
     .btn-wicket { background: #ef4444; }
+    .btn-out { background: #991b1b; font-weight: 700; }
 
-    .action-btn:hover {
+    .action-btn:hover:not(:disabled) {
         transform: scale(1.12);
         box-shadow: 0 0 10px currentColor;
     }
-
+    .action-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
+    }
     .score-display {
         font-size: 18px;
         font-weight: 600;
-        width: 60px;
+        width: 75px;
         text-align: center;
         padding: 8px;
         background: #0f172a;
@@ -177,18 +159,19 @@
         border-radius: 8px;
         color: #67e8f9;
     }
-
+    .player-out {
+        opacity: 0.65;
+        background: rgba(153, 27, 27, 0.25) !important;
+    }
     .total-row {
         background: rgba(0,245,255,0.12);
         font-weight: 700;
         font-size: 19px;
     }
-
     .submit-section {
         text-align: center;
         padding: 30px;
     }
-
     .submit-btn {
         background: linear-gradient(135deg, #22c55e, #16a34a);
         color: white;
@@ -200,43 +183,28 @@
         cursor: pointer;
         box-shadow: 0 10px 30px rgba(34,197,94,0.4);
     }
-
     .submit-btn:hover {
         transform: scale(1.08);
-    }
-
-    .mobile-notice {
-        text-align: center;
-        padding: 12px;
-        background: rgba(234,179,8,0.15);
-        border-radius: 12px;
-        margin: 10px 20px;
-        font-size: 14px;
     }
 </style>
 </head>
 <body>
-
 <div class="header">
     <div class="logo">WAL TEAM SCORE PANEL</div>
     <div style="font-size:15px; opacity:0.8;">Tap Buttons to Score • Mobile Friendly</div>
 </div>
-
 <div class="container">
-
-    <!-- Team Selection -->
     <div class="box">
         <div class="box-header">🏆 SELECT YOUR TEAM</div>
         <div class="team-grid" id="teamGrid"></div>
     </div>
 
-    <!-- Score Panel -->
     <div class="box" id="scorePanel" style="display: none;">
         <div class="box-header">
-            <span id="teamTitle"></span> 
+            <span id="teamTitle"></span>
             <span style="float:right; font-size:15px; opacity:0.8;" id="remainingBudget"></span>
         </div>
-        
+       
         <div class="scoring-table">
             <table>
                 <thead>
@@ -246,7 +214,7 @@
                         <th>Runs</th>
                         <th>Wickets</th>
                         <th>Points</th>
-                        <th style="width: 260px;">Quick Score</th>
+                        <th style="width: 340px;">Quick Score</th>
                     </tr>
                 </thead>
                 <tbody id="tableBody"></tbody>
@@ -261,53 +229,51 @@
                 </tfoot>
             </table>
         </div>
-
         <div class="submit-section">
             <button class="submit-btn" onclick="downloadScorePNG()">
                 ✅ SUBMIT & DOWNLOAD SCORE PNG
             </button>
         </div>
     </div>
-
 </div>
 
 <script>
 // Team Data
 const teamsData = {
     "Dragon Hunters": { remaining: 30, players: [
-        {name: "Yasharyu", role: "BAT"}, {name: "Jaggu", role: "BALL"}, 
+        {name: "Yasharyu", role: "BAT"}, {name: "Jaggu", role: "BALL"},
         {name: "Gujura", role: "BAT"}, {name: "Leo", role: "BAT"},
-        {name: "Korosuke", role: "ALL"}, {name: "Lucci", role: "BAT"}, 
+        {name: "Korosuke", role: "ALL"}, {name: "Lucci", role: "BAT"},
         {name: "Sinchan", role: "ALL"}
     ]},
     "Blaze Warriors": { remaining: 0, players: [
-        {name: "Hatori", role: "BAT"}, {name: "Gian", role: "BAT"}, 
+        {name: "Hatori", role: "BAT"}, {name: "Gian", role: "BAT"},
         {name: "Sishimanu", role: "BALL"}, {name: "Sentaro", role: "BAT"},
-        {name: "Amara", role: "BAT"}, {name: "Payan", role: "ALL"}, 
+        {name: "Amara", role: "BAT"}, {name: "Payan", role: "ALL"},
         {name: "Bubi", role: "BALL"}
     ]},
     "Tiger Titans": { remaining: 390, players: [
-        {name: "Sinzo", role: "BALL"}, {name: "Keo", role: "BALL"}, 
+        {name: "Sinzo", role: "BALL"}, {name: "Keo", role: "BALL"},
         {name: "Perman", role: "BAT"}, {name: "Rin", role: "BAT"},
-        {name: "Jony", role: "ALL"}, {name: "Haruto", role: "ALL"}, 
+        {name: "Jony", role: "ALL"}, {name: "Haruto", role: "ALL"},
         {name: "Pankaj", role: "ALL"}
     ]},
     "Shadow Ninjas": { remaining: 90, players: [
-        {name: "Jack", role: "BALL"}, {name: "Doremon", role: "BAT"}, 
+        {name: "Jack", role: "BALL"}, {name: "Doremon", role: "BAT"},
         {name: "Henry", role: "BAT"}, {name: "Kenichi", role: "BALL"},
-        {name: "Takashi", role: "BAT"}, {name: "Zorai", role: "BAT"}, 
+        {name: "Takashi", role: "BAT"}, {name: "Zorai", role: "BAT"},
         {name: "Kazuma", role: "ALL"}
     ]},
     "Phantom Raiders": { remaining: 0, players: [
-        {name: "BanTen", role: "BAT"}, {name: "Raju", role: "ALL"}, 
+        {name: "BanTen", role: "BAT"}, {name: "Raju", role: "ALL"},
         {name: "Nobita", role: "BAT"}, {name: "VeerX", role: "BAT"},
-        {name: "Dekisugi", role: "BAT"}, {name: "Hiroto", role: "BALL"}, 
+        {name: "Dekisugi", role: "BAT"}, {name: "Hiroto", role: "BALL"},
         {name: "Kaito", role: "BALL"}
     ]},
     "Thunder Legends": { remaining: 0, players: [
-        {name: "Bhim", role: "BAT"}, {name: "Veer", role: "BAT"}, 
+        {name: "Bhim", role: "BAT"}, {name: "Veer", role: "BAT"},
         {name: "Geo", role: "BAT"}, {name: "Kenzu", role: "ALL"},
-        {name: "Torin", role: "ALL"}, {name: "Krish", role: "BAT"}, 
+        {name: "Torin", role: "ALL"}, {name: "Krish", role: "BAT"},
         {name: "Shinra", role: "BALL"}
     ]}
 };
@@ -318,7 +284,6 @@ let playerScores = [];
 function loadTeamSelection() {
     const grid = document.getElementById("teamGrid");
     grid.innerHTML = "";
-
     Object.keys(teamsData).forEach(team => {
         const card = document.createElement("div");
         card.className = "team-card";
@@ -335,44 +300,49 @@ function selectTeam(team) {
     currentTeam = team;
     document.getElementById("teamGrid").parentElement.style.display = "none";
     document.getElementById("scorePanel").style.display = "block";
-
     document.getElementById("teamTitle").innerText = team;
     document.getElementById("remainingBudget").innerText = `🪙 ${teamsData[team].remaining}L Remaining`;
-
+    
     playerScores = teamsData[team].players.map(p => ({
         name: p.name,
         role: p.role,
         runs: 0,
-        balls: 0,
         wickets: 0,
-        points: 0
+        points: 0,
+        isOut: false
     }));
-
     renderScoreTable();
 }
 
 function renderScoreTable() {
     const tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
-
+    
     playerScores.forEach((player, index) => {
+        const isBowler = player.role === "BALL" || player.role === "ALL";
+        
+        let actionButtons = `
+            <button class="action-btn btn-1" onclick="addRun(${index}, 1)">+1</button>
+            <button class="action-btn btn-4" onclick="addRun(${index}, 4)">+4</button>
+            <button class="action-btn btn-6" onclick="addRun(${index}, 6)">+6</button>
+        `;
+        
+        if (isBowler) {
+            actionButtons += `<button class="action-btn btn-wicket" onclick="addWicket(${index})">WICKET</button>`;
+        }
+        
+        actionButtons += `<button class="action-btn btn-out" onclick="markOut(${index})">OUT</button>`;
+
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td class="player-name">${player.name}</td>
+            <td class="player-name ${player.isOut ? 'player-out' : ''}">${player.name}</td>
             <td><span class="role ${player.role}">${player.role}</span></td>
-            
-            <td><div class="score-display" id="runs-${index}">0</div></td>
-            <td><div class="score-display" id="balls-${index}">0</div></td>
-            <td><div class="score-display" id="wickets-${index}">0</div></td>
-            <td><div class="score-display" id="points-${index}" style="color:#4ade80;">0</div></td>
-            
+            <td><div class="score-display ${player.isOut && player.role === 'BAT' ? 'player-out' : ''}" id="runs-${index}">${player.runs}</div></td>
+            <td><div class="score-display" id="wickets-${index}">${player.wickets}</div></td>
+            <td><div class="score-display ${player.isOut && player.role === 'BAT' ? 'player-out' : ''}" id="points-${index}" style="color:#4ade80;">${player.points}</div></td>
             <td>
-                <div class="action-btns">
-                    <button class="action-btn btn-1" onclick="addRun(${index}, 1)">+1</button>
-                    <button class="action-btn btn-4" onclick="addRun(${index}, 4)">+4</button>
-                    <button class="action-btn btn-6" onclick="addRun(${index}, 6)">+6</button>
-                    <button class="action-btn btn-dot" onclick="addDot(${index})">Dot</button>
-                    <button class="action-btn btn-wicket" onclick="addWicket(${index})">WICKET</button>
+                <div class="action-btns" id="actions-${index}">
+                    ${actionButtons}
                 </div>
             </td>
         `;
@@ -380,59 +350,79 @@ function renderScoreTable() {
     });
 }
 
-// Button Functions
 function addRun(index, runs) {
-    playerScores[index].runs += runs;
-    playerScores[index].balls += 1;
-    updatePlayerDisplay(index);
-}
-
-function addDot(index) {
-    playerScores[index].balls += 1;
+    const player = playerScores[index];
+    if (player.isOut && player.role === "BAT") return;   // Batsman out hone ke baad runs nahi add honge
+    player.runs += runs;
     updatePlayerDisplay(index);
 }
 
 function addWicket(index) {
-    playerScores[index].wickets += 1;
-    playerScores[index].balls += 1;
+    const player = playerScores[index];
+    if (player.isOut && player.role === "BAT") return;   // Sirf batsman ke case mein wicket bhi lock
+    player.wickets += 1;
     updatePlayerDisplay(index);
+}
+
+function markOut(index) {
+    const player = playerScores[index];
+    if (player.isOut) return;
+    
+    player.isOut = true;
+    updatePlayerDisplay(index);
+    
+    // Disable Run buttons for everyone when OUT
+    const runBtns = document.querySelectorAll(`#actions-${index} .btn-1, #actions-${index} .btn-4, #actions-${index} .btn-6`);
+    runBtns.forEach(btn => btn.disabled = true);
+    
+    // For Batsman - also disable Wicket button if present
+    if (player.role === "BAT") {
+        const wicketBtn = document.querySelector(`#actions-${index} .btn-wicket`);
+        if (wicketBtn) wicketBtn.disabled = true;
+    }
 }
 
 function updatePlayerDisplay(index) {
     const p = playerScores[index];
     
-    // Update display
     document.getElementById(`runs-${index}`).innerText = p.runs;
-    document.getElementById(`balls-${index}`).innerText = p.balls;
     document.getElementById(`wickets-${index}`).innerText = p.wickets;
-
-    // Calculate points (Runs + 25 per wicket + 1 point every 5 balls)
-    p.points = (p.runs * 1) + (p.wickets * 25) + Math.floor(p.balls / 5);
+    
+    // Points Calculation
+    let points = p.runs * 1;
+    
+    if (p.wickets > 0) {
+        points += p.wickets * 25;
+        
+        if (p.role === "BALL" || p.role === "ALL") {
+            if (p.wickets === 2) points += 30;
+            else if (p.wickets === 3) points += 40;
+            else if (p.wickets === 4) points += 50;
+            else if (p.wickets >= 5) points += 60;
+        }
+    }
+    
+    p.points = points;
     document.getElementById(`points-${index}`).innerText = p.points;
-
+    
     calculateTotal();
 }
 
 function calculateTotal() {
-    let totalRuns = 0, totalBalls = 0, totalWickets = 0, totalPoints = 0;
-
+    let totalRuns = 0, totalWickets = 0, totalPoints = 0;
     playerScores.forEach(p => {
         totalRuns += p.runs;
-        totalBalls += p.balls;
         totalWickets += p.wickets;
         totalPoints += p.points;
     });
-
     document.getElementById("totalRuns").innerText = totalRuns;
-    document.getElementById("totalBalls").innerText = totalBalls;
     document.getElementById("totalWickets").innerText = totalWickets;
     document.getElementById("totalPoints").innerText = totalPoints;
 }
 
-// Download PNG
 async function downloadScorePNG() {
     if (!currentTeam) return alert("Please select a team first!");
-
+    
     if (typeof html2canvas === 'undefined') {
         const script = document.createElement('script');
         script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
@@ -460,8 +450,6 @@ function generatePNG() {
 // Initialize
 loadTeamSelection();
 </script>
-
 <script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </body>
-    https://pankajpmi.github.io/wal/match.html
 </html>
