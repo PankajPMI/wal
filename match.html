@@ -82,21 +82,6 @@
         position: relative;
         overflow: hidden;
     }
-    .match-card::before {
-        content: '';
-        position: absolute;
-        top: -50%;
-        left: -50%;
-        width: 40%;
-        height: 40%;
-        background: radial-gradient(circle, rgba(0,245,255,0.15) 0%, transparent 70%);
-        opacity: 0;
-        transition: all 0.6s;
-    }
-    .match-card:hover::before {
-        opacity: 1;
-        transform: scale(2);
-    }
     .match-card:hover {
         border-color: var(--primary);
         transform: scale(1.03);
@@ -135,7 +120,6 @@
         text-align: center;
         font-size: 18px;
         font-weight: 600;
-        transition: all 0.3s;
     }
     .score-input input:focus {
         border-color: var(--primary);
@@ -190,9 +174,6 @@
         font-weight: 600;
         font-size: 16px;
     }
-    tr {
-        transition: all 0.3s ease;
-    }
     tr:hover {
         background: rgba(0, 245, 255, 0.12);
         transform: scale(1.01);
@@ -220,15 +201,13 @@
 </div>
 
 <div class="container">
-    <!-- Schedule -->
     <div class="box">
-        <div class="box-header">📅 MATCH SCHEDULE (First 8 Completed • Next Matches Live)</div>
+        <div class="box-header">📅 MATCH SCHEDULE (12 League Matches Completed • Semi-Finals & Final Coming Soon)</div>
         <div id="schedule"></div>
     </div>
 
-    <!-- Points Table -->
     <div class="box">
-        <div class="box-header">🏆 LIVE POINTS TABLE</div>
+        <div class="box-header">🏆 LIVE POINTS TABLE (After 12 Matches)</div>
         <table>
             <thead>
                 <tr>
@@ -251,9 +230,9 @@
 // Teams
 const teams = ["Dragon Hunters", "Blaze Warriors", "Tiger Titans", "Shadow Ninjas", "Phantom Raiders", "Thunder Legends"];
 
-// Full Matches List (First 8 completed + Next 10 upcoming)
+// Updated Matches List with your new results
 let matches = [
-    // === Completed Matches (8) ===
+    // Previous 8 matches
     {id:1, team1: "Dragon Hunters", team2: "Blaze Warriors", winner: "Dragon Hunters", runs1: 101, runs2: 41},
     {id:2, team1: "Tiger Titans", team2: "Shadow Ninjas", winner: "Tiger Titans", runs1: 84, runs2: 78},
     {id:3, team1: "Thunder Legends", team2: "Phantom Raiders", winner: "Thunder Legends", runs1: 90, runs2: 12},
@@ -263,24 +242,19 @@ let matches = [
     {id:7, team1: "Dragon Hunters", team2: "Phantom Raiders", winner: "Phantom Raiders", runs1: 131, runs2: 132},
     {id:8, team1: "Blaze Warriors", team2: "Tiger Titans", winner: "Blaze Warriors", runs1: 92, runs2: 90},
 
-    // === Next Upcoming Matches (Live Scoring) ===
-    {id:9, team1: "Shadow Ninjas", team2: "Dragon Hunters", winner: null, runs1: 0, runs2: 0},
-    {id:10, team1: "Thunder Legends", team2: "Blaze Warriors", winner: null, runs1: 0, runs2: 0},
-    {id:11, team1: "Tiger Titans", team2: "Phantom Raiders", winner: null, runs1: 0, runs2: 0},
-    {id:12, team1: "Thunder Legends", team2: "Dragon Hunters", winner: null, runs1: 0, runs2: 0},
-    {id:13, team1: "Shadow Ninjas", team2: "Blaze Warriors", winner: null, runs1: 0, runs2: 0},
-    {id:14, team1: "Tiger Titans", team2: "Thunder Legends", winner: null, runs1: 0, runs2: 0},
-    {id:15, team1: "Phantom Raiders", team2: "Shadow Ninjas", winner: null, runs1: 0, runs2: 0},
-    {id:16, team1: "Dragon Hunters", team2: "Thunder Legends", winner: null, runs1: 0, runs2: 0},
-    {id:17, team1: "Blaze Warriors", team2: "Shadow Ninjas", winner: null, runs1: 0, runs2: 0},
-    {id:18, team1: "Tiger Titans", team2: "Phantom Raiders", winner: null, runs1: 0, runs2: 0}
+    // New Updated Matches
+    {id:9, team1: "Thunder Legends", team2: "Shadow Ninjas", winner: "Thunder Legends", runs1: 153, runs2: 34},
+    {id:10, team1: "Shadow Ninjas", team2: "Dragon Hunters", winner: "Dragon Hunters", runs1: 70, runs2: 169},
+    {id:11, team1: "Thunder Legends", team2: "Blaze Warriors", winner: "Blaze Warriors", runs1: 18, runs2: 24},
+    {id:12, team1: "Tiger Titans", team2: "Phantom Raiders", winner: "Tiger Titans", runs1: 59, runs2: 56},
+    {id:13, team1: "Thunder Legends", team2: "Dragon Hunters", winner: "Dragon Hunters", runs1: 75, runs2: 200}
 ];
 
 let pointsData = {};
 
 function initPointsData() {
     teams.forEach(team => {
-        pointsData[team] = { played: 0, won: 0, lost: 0, runsScored: 0, points: 0, nrr: (Math.random()*1.8 - 0.6).toFixed(2) };
+        pointsData[team] = { played: 0, won: 0, lost: 0, runsScored: 0, points: 0, nrr: (Math.random()*2.0 - 0.8).toFixed(2) };
     });
 }
 
@@ -291,9 +265,8 @@ function renderSchedule() {
     matches.forEach(match => {
         const card = document.createElement("div");
         card.className = "match-card";
-        
         const isDecided = match.winner !== null;
-        
+
         card.innerHTML = `
             <div class="match-header">
                 <span>${match.team1}</span>
@@ -323,7 +296,7 @@ function renderSchedule() {
                 </button>
             </div>
         `;
-        
+
         if (isDecided) {
             const winnerBtn = match.winner === match.team1 ? 
                 card.querySelector(`#btn1-${match.id}`) : 
@@ -397,7 +370,6 @@ function renderPointsTable() {
 window.onload = function() {
     initPointsData();
     
-    // Auto calculate points from completed matches
     matches.forEach(match => {
         if (match.winner) {
             const loser = match.winner === match.team1 ? match.team2 : match.team1;
