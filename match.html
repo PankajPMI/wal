@@ -3,14 +3,14 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>WAL 2026 - Playoffs & Final Points Table</title>
+<title>WAL - Team Score Panel (Season 2)</title>
 <style>
     @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Orbitron:wght@500;600;700&display=swap');
     :root {
         --primary: #00f5ff;
         --accent: #ff2e63;
-        --neon: #a855f7;
-        --gold: #ffd700;
+        --dark: #0a0f1c;
+        --card: #121a2e;
     }
     * { margin:0; padding:0; box-sizing:border-box; }
     body {
@@ -18,376 +18,597 @@
         background: radial-gradient(circle at center, #1a2338 0%, #0a0f1c 80%);
         color: #e0f2fe;
         min-height: 100vh;
-        overflow-x: hidden;
-        background-attachment: fixed;
+        padding-bottom: 80px;
     }
     .header {
-        background: rgba(10,15,28,0.98);
+        background: rgba(10,15,28,0.95);
         backdrop-filter: blur(20px);
-        border-bottom: 3px solid var(--primary);
-        padding: 25px 30px;
+        border-bottom: 1px solid rgba(0,245,255,0.3);
+        padding: 15px 20px;
         display: flex;
         align-items: center;
         justify-content: space-between;
         position: sticky;
         top: 0;
         z-index: 1000;
-        box-shadow: 0 0 40px rgba(0,245,255,0.4);
     }
     .logo {
         font-family: 'Orbitron', sans-serif;
-        font-size: 38px;
+        font-size: 24px;
         font-weight: 700;
-        background: linear-gradient(90deg, #00f5ff, #ff2e63, #a855f7);
+        background: linear-gradient(90deg, #00f5ff, #ff2e63);
         -webkit-background-clip: text;
         -webkit-text-fill-color: transparent;
-        text-shadow: 0 0 30px rgba(0,245,255,0.6);
-        animation: logoGlow 2s infinite alternate;
     }
-    @keyframes logoGlow {
-        from { text-shadow: 0 0 20px rgba(0,245,255,0.5); }
-        to { text-shadow: 0 0 50px rgba(168,85,247,0.8); }
-    }
-
-    .container { max-width: 1450px; margin: 40px auto; padding: 0 25px; }
-
-    .section {
-        background: var(--card, #121a2e);
-        border-radius: 28px;
-        border: 1px solid rgba(0,245,255,0.3);
-        box-shadow: 0 20px 60px rgba(0,0,0,0.8);
-        margin-bottom: 50px;
+    .tabs {
+        display: flex;
+        background: #1e2937;
+        border-radius: 12px;
         overflow: hidden;
+        width: fit-content;
+        margin: 20px auto;
     }
-    .section-header {
-        background: linear-gradient(135deg, rgba(0,245,255,0.25), rgba(255,46,99,0.2), rgba(168,85,247,0.15));
-        padding: 28px 35px;
+    .tab {
+        padding: 12px 28px;
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s;
+    }
+    .tab.active {
+        background: var(--primary);
+        color: #000;
+    }
+    .container {
+        max-width: 1100px;
+        margin: 20px auto;
+        padding: 0 15px;
+    }
+    .box {
+        background: var(--card);
+        border-radius: 20px;
+        border: 1px solid rgba(0,245,255,0.2);
+        box-shadow: 0 10px 40px rgba(0,0,0,0.6);
+        overflow: hidden;
+        margin-bottom: 25px;
+    }
+    .box-header {
+        background: linear-gradient(135deg, rgba(0,245,255,0.15), rgba(255,46,99,0.1));
+        padding: 18px 22px;
         font-family: 'Orbitron', sans-serif;
-        font-size: 28px;
+        font-size: 18px;
         color: var(--primary);
-        border-bottom: 3px solid rgba(0,245,255,0.4);
+        border-bottom: 1px solid rgba(0,245,255,0.2);
+    }
+    .team-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+        gap: 15px;
+        padding: 20px;
+    }
+    .team-card {
+        background: #1e2937;
+        border-radius: 16px;
+        padding: 18px;
+        cursor: pointer;
+        transition: all 0.3s;
+        border: 2px solid transparent;
+    }
+    .team-card:hover, .team-card.active {
+        border-color: #00f5ff;
+        transform: scale(1.03);
+    }
+    .team-name {
+        font-size: 18px;
+        font-weight: 600;
+        margin-bottom: 8px;
+    }
+
+    /* Schedule Styles */
+    .round {
+        margin-bottom: 30px;
+    }
+    .round-header {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 20px;
+        color: var(--primary);
+        margin-bottom: 12px;
+        padding-left: 10px;
+    }
+    .match-card {
+        background: #1e2937;
+        border-radius: 16px;
+        padding: 16px 20px;
+        margin-bottom: 12px;
+        border: 1px solid rgba(0,245,255,0.15);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .match-teams {
         display: flex;
         align-items: center;
         gap: 15px;
-        text-shadow: 0 0 15px var(--primary);
+        flex: 1;
+    }
+    .team-vs {
+        font-size: 22px;
+        font-weight: 700;
+        color: #64748b;
+    }
+    .match-info {
+        font-size: 14px;
+        opacity: 0.8;
     }
 
-    /* Points Table Styles (same as before) */
-    table { width: 100%; border-collapse: collapse; }
-    th, td { padding: 20px 30px; text-align: left; border-bottom: 1px solid rgba(0,245,255,0.15); }
-    th { background: #1e2937; color: var(--primary); font-weight: 700; font-size: 17px; }
-    tr { transition: all 0.4s ease; }
-    tr:hover { background: rgba(0, 245, 255, 0.18); transform: scale(1.02); }
-    .position { font-family: 'Orbitron', sans-serif; font-size: 28px; font-weight: 700; color: #67e8f9; text-shadow: 0 0 15px #67e8f9; }
-    .team-name { font-weight: 700; font-size: 18px; }
-    .win { color: #22c55e; font-weight: 700; }
-    .loss { color: #ef4444; font-weight: 600; }
-    .nrr { font-family: 'Orbitron', sans-serif; font-weight: 700; }
-    .points { font-size: 22px; font-weight: 800; color: #67e8f9; }
-
-    /* === PLAYOFF BRACKET - ULTRA ANIMATED === */
-    .bracket-container {
-        padding: 60px 40px;
-        position: relative;
+    .scoring-table {
+        padding: 20px;
+        overflow-x: auto;
+    }
+    table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 680px;
+    }
+    th, td {
+        padding: 14px 10px;
+        text-align: left;
+        border-bottom: 1px solid rgba(148,163,184,0.2);
+    }
+    th {
+        background: #1e2937;
+        color: var(--primary);
+        font-weight: 600;
+    }
+    .player-name {
+        font-weight: 600;
+        font-size: 15.5px;
+    }
+    .role {
+        padding: 5px 12px;
+        border-radius: 20px;
+        font-size: 12px;
+        font-weight: 600;
+    }
+    .BAT { background: #3b82f6; color: white; }
+    .BALL { background: #ef4444; color: white; }
+    .ALL { background: #eab308; color: black; }
+    .action-btns {
         display: flex;
-        justify-content: center;
-        gap: 80px;
+        gap: 6px;
         flex-wrap: wrap;
     }
-
-    .match-box {
-        background: linear-gradient(145deg, #1e2937, #0f172a);
-        border: 2px solid var(--primary);
-        border-radius: 22px;
-        padding: 28px 40px;
-        width: 380px;
-        text-align: center;
-        box-shadow: 0 0 35px rgba(0,245,255,0.35);
-        transition: all 0.4s cubic-bezier(0.23,1,0.32,1);
-        position: relative;
-        overflow: hidden;
-    }
-    .match-box:hover {
-        transform: translateY(-12px) scale(1.04);
-        border-color: var(--accent);
-        box-shadow: 0 0 60px rgba(255,46,99,0.6);
-    }
-    .match-box::after {
-        content: '';
-        position: absolute;
-        inset: 0;
-        background: linear-gradient(transparent, rgba(255,255,255,0.08), transparent);
-        opacity: 0;
-        transition: opacity 0.6s;
-    }
-    .match-box:hover::after { opacity: 1; }
-
-    .match-title {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 19px;
-        color: var(--accent);
-        margin-bottom: 18px;
-        text-shadow: 0 0 12px var(--accent);
-        letter-spacing: 1px;
-    }
-
-    .team-slot {
-        padding: 16px 22px;
-        margin: 12px 0;
-        background: rgba(15,23,42,0.85);
-        border-radius: 14px;
-        font-weight: 600;
-        font-size: 17px;
-        transition: all 0.4s ease;
-        border: 1px solid rgba(0,245,255,0.2);
-    }
-    .team-slot:hover {
-        background: rgba(0,245,255,0.15);
-        border-color: var(--primary);
-    }
-
-    .vs-bracket {
-        color: var(--primary);
-        font-size: 26px;
+    .action-btn {
+        padding: 8px 14px;
+        font-size: 14px;
         font-weight: 700;
-        margin: 12px 0;
-        text-shadow: 0 0 15px var(--primary);
+        border: none;
+        border-radius: 8px;
+        cursor: pointer;
+        color: white;
+        transition: all 0.2s;
+        min-width: 55px;
+        text-align: center;
     }
-
-    /* Flow Arrows with Animation */
-    .flow-arrow {
-        position: absolute;
-        font-size: 42px;
-        color: var(--primary);
-        text-shadow: 0 0 20px var(--primary);
-        animation: arrowFlow 3s infinite linear;
-        z-index: 2;
+    .btn-1 { background: #3b82f6; }
+    .btn-4 { background: #eab308; }
+    .btn-6 { background: #22c55e; }
+    .btn-wicket { background: #ef4444; }
+    .btn-out { background: #991b1b; font-weight: 700; }
+    .action-btn:hover:not(:disabled) {
+        transform: scale(1.12);
+        box-shadow: 0 0 10px currentColor;
     }
-    @keyframes arrowFlow {
-        0% { opacity: 0.4; transform: translateY(0); }
-        50% { opacity: 1; }
-        100% { opacity: 0.4; transform: translateY(12px); }
+    .action-btn:disabled {
+        opacity: 0.4;
+        cursor: not-allowed;
     }
-
-    .final-box {
-        width: 440px;
-        border: 3px solid var(--gold);
-        box-shadow: 0 0 70px rgba(255,215,0,0.7);
-        background: linear-gradient(145deg, #2a2f45, #1a2035);
+    .score-display {
+        font-size: 18px;
+        font-weight: 600;
+        width: 75px;
+        text-align: center;
+        padding: 8px;
+        background: #0f172a;
+        border: 1px solid #334155;
+        border-radius: 8px;
+        color: #67e8f9;
     }
-
-    /* Extra Neon Background Lines */
-    .bracket-container::before {
-        content: '';
-        position: absolute;
-        top: 0; left: 0; right: 0; bottom: 0;
-        background: 
-            linear-gradient(to right, rgba(0,245,255,0.03) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(0,245,255,0.03) 1px, transparent 1px);
-        background-size: 60px 60px;
-        pointer-events: none;
-        z-index: 0;
+    .player-out {
+        opacity: 0.65;
+        background: rgba(153, 27, 27, 0.25) !important;
+    }
+    .total-row {
+        background: rgba(0,245,255,0.12);
+        font-weight: 700;
+        font-size: 19px;
+    }
+    .submit-section {
+        text-align: center;
+        padding: 30px;
+    }
+    .submit-btn {
+        background: linear-gradient(135deg, #22c55e, #16a34a);
+        color: white;
+        border: none;
+        padding: 18px 60px;
+        font-size: 20px;
+        font-weight: 700;
+        border-radius: 50px;
+        cursor: pointer;
+        box-shadow: 0 10px 30px rgba(34,197,94,0.4);
+    }
+    .submit-btn:hover {
+        transform: scale(1.08);
     }
 </style>
 </head>
 <body>
 <div class="header">
-    <div class="logo">WAL 2026</div>
-    <div style="font-size:22px; font-weight:700; color:#a5b4fc; text-shadow:0 0 15px #a855f7;">🔥 ROAD TO THE TITLE - PLAYOFFS</div>
+    <div class="logo">WAL SEASON 2</div>
+    <div style="font-size:15px; opacity:0.8;">Score Panel + Schedule</div>
+</div>
+
+<div class="tabs">
+    <div class="tab active" onclick="showTab(0)" id="tab0">🏆 Team Score</div>
+    <div class="tab" onclick="showTab(1)" id="tab1">📅 Saandar Schedule</div>
 </div>
 
 <div class="container">
 
-    <!-- Points Table -->
-    <div class="section">
-        <div class="section-header">🏆 FINAL LEAGUE POINTS TABLE</div>
-        <table>
-            <thead>
-                <tr>
-                    <th>Pos</th>
-                    <th>Team</th>
-                    <th>Played</th>
-                    <th>Won</th>
-                    <th>Lost</th>
-                    <th>Runs Scored</th>
-                    <th>Points</th>
-                    <th>NRR</th>
-                </tr>
-            </thead>
-            <tbody id="pointsBody"></tbody>
-        </table>
+    <!-- Team Score Panel -->
+    <div id="scoreTab">
+        <div class="box">
+            <div class="box-header">🏆 SELECT YOUR TEAM (Season 2)</div>
+            <div class="team-grid" id="teamGrid"></div>
+        </div>
+        <div class="box" id="scorePanel" style="display: none;">
+            <div class="box-header">
+                <span id="teamTitle"></span>
+                <span style="float:right; font-size:15px; opacity:0.8;" id="remainingBudget"></span>
+            </div>
+            <div class="scoring-table">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Player Name</th>
+                            <th>Role</th>
+                            <th>Runs</th>
+                            <th>Wickets</th>
+                            <th style="width: 340px;">Quick Score</th>
+                        </tr>
+                    </thead>
+                    <tbody id="tableBody"></tbody>
+                    <tfoot>
+                        <tr class="total-row">
+                            <td colspan="2"><strong>TOTAL</strong></td>
+                            <td id="totalRuns">0</td>
+                            <td id="totalWickets">0</td>
+                            <td></td>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+            <div class="submit-section">
+                <button class="submit-btn" onclick="downloadScorePNG()">
+                    ✅ SUBMIT & DOWNLOAD SCORE PNG
+                </button>
+            </div>
+        </div>
     </div>
 
-    <!-- Playoff Bracket -->
-    <div class="section">
-        <div class="section-header">🔥 PLAYOFF BRACKET - ROAD TO THE TITLE</div>
-        <div class="bracket-container" id="bracket"></div>
+    <!-- Schedule Tab -->
+    <div id="scheduleTab" style="display: none;">
+        <div class="box">
+            <div class="box-header">🔥 WAL SEASON 2 - SAANDAR SCHEDULE (6 Matches Each Team)</div>
+            <div style="padding: 25px;" id="scheduleContent"></div>
+        </div>
     </div>
 
 </div>
 
 <script>
-// Same data and logic as before
-const teams = ["Dragon Hunters", "Blaze Warriors", "Tiger Titans", "Shadow Ninjas", "Phantom Raiders", "Thunder Legends"];
+// ==================== SEASON 2 TEAM DATA ====================
+const teamsData = {
+    "Dragon Hunters": {
+        remaining: 0,
+        players: [
+            {name: "Yasharyu", role: "BAT"},
+            {name: "Lucci", role: "BAT"},
+            {name: "Max", role: "BAT"},
+            {name: "Kay", role: "BAT"},
+            {name: "Korosuke", role: "ALL"},
+            {name: "Jaggu", role: "BALL"},
+            {name: "Sinzo", role: "BALL"}
+        ]
+    },
+    "Blaze Warriors": {
+        remaining: 0,
+        players: [
+            {name: "Hatori", role: "BAT"},
+            {name: "Sentaro", role: "BAT"},
+            {name: "KItreakshu", role: "BAT"},
+            {name: "Kemon", role: "BAT"},
+            {name: "Payan", role: "ALL"},
+            {name: "Tryfun", role: "ALL"},
+            {name: "Butagorira", role: "BALL"}
+        ]
+    },
+    "Tiger Titans": {
+        remaining: 0,
+        players: [
+            {name: "Rin", role: "BAT"},
+            {name: "Amara", role: "BAT"},
+            {name: "Dekisugi", role: "BAT"},
+            {name: "Tanjiro", role: "BAT"},
+            {name: "Pankaj", role: "ALL"},
+            {name: "Raju", role: "ALL"},
+            {name: "Keo", role: "BALL"}
+        ]
+    },
+    "Shadow Ninjas": {
+        remaining: 0,
+        players: [
+            {name: "Doremon", role: "BAT"},
+            {name: "Gujura", role: "BAT"},
+            {name: "Leo", role: "BAT"},
+            {name: "Gian", role: "BAT"},
+            {name: "kaliya", role: "ALL"},
+            {name: "Kenichi", role: "BALL"},
+            {name: "Sishimanu", role: "BALL"}
+        ]
+    },
+    "Phantom Raiders": {
+        remaining: 0,
+        players: [
+            {name: "BanTen", role: "BAT"},
+            {name: "Nobita", role: "BAT"},
+            {name: "Perman", role: "BAT"},
+            {name: "naruto", role: "BAT"},
+            {name: "Sinchan", role: "ALL"},
+            {name: "Bubi", role: "BALL"},
+            {name: "Kirito", role: "BALL"}
+        ]
+    },
+    "Thunder Legends": {
+        remaining: 0,
+        players: [
+            {name: "Bhim", role: "BAT"},
+            {name: "Krish", role: "BAT"},
+            {name: "Geo", role: "BAT"},
+            {name: "Veer", role: "BAT"},
+            {name: "Rimuru", role: "ALL"},
+            {name: "Shinra", role: "BALL"},
+            {name: "Jack", role: "BALL"}
+        ]
+    }
+};
 
-let matches = [
-    {id:1, team1: "Dragon Hunters", team2: "Blaze Warriors", winner: "Dragon Hunters", runs1: 101, runs2: 41},
-    {id:2, team1: "Tiger Titans", team2: "Shadow Ninjas", winner: "Tiger Titans", runs1: 84, runs2: 78},
-    {id:3, team1: "Thunder Legends", team2: "Phantom Raiders", winner: "Thunder Legends", runs1: 90, runs2: 12},
-    {id:4, team1: "Tiger Titans", team2: "Dragon Hunters", winner: "Dragon Hunters", runs1: 91, runs2: 92},
-    {id:5, team1: "Blaze Warriors", team2: "Phantom Raiders", winner: "Blaze Warriors", runs1: 186, runs2: 94},
-    {id:6, team1: "Thunder Legends", team2: "Shadow Ninjas", winner: "Thunder Legends", runs1: 113, runs2: 109},
-    {id:7, team1: "Dragon Hunters", team2: "Phantom Raiders", winner: "Phantom Raiders", runs1: 131, runs2: 132},
-    {id:8, team1: "Blaze Warriors", team2: "Tiger Titans", winner: "Blaze Warriors", runs1: 92, runs2: 90},
-    {id:9, team1: "Thunder Legends", team2: "Shadow Ninjas", winner: "Thunder Legends", runs1: 153, runs2: 34},
-    {id:10, team1: "Shadow Ninjas", team2: "Dragon Hunters", winner: "Dragon Hunters", runs1: 70, runs2: 169},
-    {id:11, team1: "Thunder Legends", team2: "Blaze Warriors", winner: "Blaze Warriors", runs1: 18, runs2: 24},
-    {id:12, team1: "Tiger Titans", team2: "Phantom Raiders", winner: "Tiger Titans", runs1: 59, runs2: 56},
-    {id:13, team1: "Thunder Legends", team2: "Dragon Hunters", winner: "Dragon Hunters", runs1: 75, runs2: 200},
-    {id:14, team1: "Shadow Ninjas", team2: "Blaze Warriors", winner: "Blaze Warriors", runs1: 90, runs2: 94},
-    {id:18, team1: "Tiger Titans", team2: "Phantom Raiders", winner: "Tiger Titans", runs1: 71, runs2: 45},
-    {id:19, team1: "Dragon Hunters", team2: "Tiger Titans", winner: "Dragon Hunters", runs1: 167, runs2: 98},
-    {id:20, team1: "Shadow Ninjas", team2: "Phantom Raiders", winner: "Phantom Raiders", runs1: 74, runs2: 128},
-    {id:21, team1: "Blaze Warriors", team2: "Thunder Legends", winner: "Thunder Legends", runs1: 80, runs2: 112}
+// Schedule - 6 Rounds, Every team plays exactly 6 matches
+const schedule = [
+    { round: 1, matches: [
+        ["Dragon Hunters", "Blaze Warriors"],
+        ["Tiger Titans", "Shadow Ninjas"],
+        ["Phantom Raiders", "Thunder Legends"]
+    ]},
+    { round: 2, matches: [
+        ["Dragon Hunters", "Tiger Titans"],
+        ["Blaze Warriors", "Phantom Raiders"],
+        ["Shadow Ninjas", "Thunder Legends"]
+    ]},
+    { round: 3, matches: [
+        ["Dragon Hunters", "Shadow Ninjas"],
+        ["Blaze Warriors", "Thunder Legends"],
+        ["Tiger Titans", "Phantom Raiders"]
+    ]},
+    { round: 4, matches: [
+        ["Dragon Hunters", "Phantom Raiders"],
+        ["Blaze Warriors", "Tiger Titans"],
+        ["Shadow Ninjas", "Thunder Legends"]
+    ]},
+    { round: 5, matches: [
+        ["Dragon Hunters", "Thunder Legends"],
+        ["Blaze Warriors", "Shadow Ninjas"],
+        ["Tiger Titans", "Phantom Raiders"]
+    ]},
+    { round: 6, matches: [
+        ["Dragon Hunters", "Blaze Warriors"],
+        ["Tiger Titans", "Shadow Ninjas"],
+        ["Phantom Raiders", "Thunder Legends"]
+    ]}
 ];
 
-let pointsData = {};
+let currentTeam = null;
+let playerScores = [];
 
-function initPointsData() {
-    teams.forEach(team => {
-        pointsData[team] = { played: 0, won: 0, lost: 0, runsScored: 0, runsConceded: 0, points: 0, nrr: 0 };
+// Tab Switching
+function showTab(tab) {
+    document.getElementById('scoreTab').style.display = tab === 0 ? 'block' : 'none';
+    document.getElementById('scheduleTab').style.display = tab === 1 ? 'block' : 'none';
+    
+    document.querySelectorAll('.tab').forEach((t, i) => {
+        t.classList.toggle('active', i === tab);
     });
 }
 
-function calculateAll() {
-    initPointsData();
-    matches.forEach(match => {
-        if (match.winner) {
-            const loser = match.winner === match.team1 ? match.team2 : match.team1;
-            const winnerRuns = match.winner === match.team1 ? match.runs1 : match.runs2;
-            const loserRuns = match.winner === match.team1 ? match.runs2 : match.runs1;
-
-            pointsData[match.winner].played++;
-            pointsData[match.winner].won++;
-            pointsData[match.winner].points += 2;
-            pointsData[match.winner].runsScored += winnerRuns;
-            pointsData[match.winner].runsConceded += loserRuns;
-
-            pointsData[loser].played++;
-            pointsData[loser].lost++;
-            pointsData[loser].runsScored += loserRuns;
-            pointsData[loser].runsConceded += winnerRuns;
-        }
+// Render Schedule
+function renderSchedule() {
+    let html = '';
+    schedule.forEach(round => {
+        html += `<div class="round">
+            <div class="round-header">ROUND ${round.round} 🔥</div>`;
+        
+        round.matches.forEach(match => {
+            html += `
+            <div class="match-card">
+                <div class="match-teams">
+                    <strong>${match[0]}</strong>
+                    <span class="team-vs">VS</span>
+                    <strong>${match[1]}</strong>
+                </div>
+                <div class="match-info">Match ${round.round} • Season 2</div>
+            </div>`;
+        });
+        html += `</div>`;
     });
+    document.getElementById('scheduleContent').innerHTML = html;
+}
 
-    Object.keys(pointsData).forEach(team => {
-        const p = pointsData[team];
-        if (p.played > 0) p.nrr = ((p.runsScored - p.runsConceded) / p.played).toFixed(2);
+// Team Selection
+function loadTeamSelection() {
+    const grid = document.getElementById("teamGrid");
+    grid.innerHTML = "";
+    Object.keys(teamsData).forEach(team => {
+        const card = document.createElement("div");
+        card.className = "team-card";
+        card.innerHTML = `
+            <div class="team-name">${team}</div>
+            <div style="color:#67e8f9;">🪙 ${teamsData[team].remaining}L Remaining</div>
+        `;
+        card.onclick = () => selectTeam(team);
+        grid.appendChild(card);
     });
 }
 
-function getSortedTeams() {
-    let data = teams.map(team => ({ team, ...pointsData[team] }));
-    data.sort((a, b) => {
-        if (b.points !== a.points) return b.points - a.points;
-        if (b.runsScored !== a.runsScored) return b.runsScored - a.runsScored;
-        return parseFloat(b.nrr) - parseFloat(a.nrr);
+function selectTeam(team) {
+    currentTeam = team;
+    document.getElementById("teamGrid").parentElement.style.display = "none";
+    document.getElementById("scorePanel").style.display = "block";
+    document.getElementById("teamTitle").innerText = team + " (Season 2)";
+    document.getElementById("remainingBudget").innerText = `🪙 ${teamsData[team].remaining}L Remaining`;
+   
+    // Sort players: BAT → ALL → BALL
+    const sortedPlayers = [...teamsData[team].players].sort((a, b) => {
+        const order = { "BAT": 1, "ALL": 2, "BALL": 3 };
+        return order[a.role] - order[b.role];
     });
-    return data;
+
+    playerScores = sortedPlayers.map(p => ({
+        name: p.name,
+        role: p.role,
+        runs: 0,
+        wickets: 0,
+        isOut: false
+    }));
+    renderScoreTable();
 }
 
-function renderPointsTable() {
-    const sorted = getSortedTeams();
-    const tbody = document.getElementById("pointsBody");
+function renderScoreTable() {
+    const tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
-    sorted.forEach((item, i) => {
+   
+    playerScores.forEach((player, index) => {
+        const isBowler = player.role === "BALL" || player.role === "ALL";
+       
+        let actionButtons = `
+            <button class="action-btn btn-1" onclick="addRun(${index}, 1)">+1</button>
+            <button class="action-btn btn-4" onclick="addRun(${index}, 4)">+4</button>
+            <button class="action-btn btn-6" onclick="addRun(${index}, 6)">+6</button>
+        `;
+       
+        if (isBowler) {
+            actionButtons += `<button class="action-btn btn-wicket" onclick="addWicket(${index})">WICKET</button>`;
+        }
+       
+        actionButtons += `<button class="action-btn btn-out" onclick="markOut(${index})">OUT</button>`;
+
         const row = document.createElement("tr");
         row.innerHTML = `
-            <td><span class="position">${i+1}</span></td>
-            <td class="team-name">${item.team}</td>
-            <td>${item.played}</td>
-            <td class="win">${item.won}</td>
-            <td class="loss">${item.lost}</td>
-            <td>${item.runsScored}</td>
-            <td class="points">${item.points}</td>
-            <td class="nrr">${item.nrr}</td>
+            <td class="player-name ${player.isOut ? 'player-out' : ''}">${player.name}</td>
+            <td><span class="role ${player.role}">${player.role}</span></td>
+            <td><div class="score-display ${player.isOut && player.role === 'BAT' ? 'player-out' : ''}" id="runs-${index}">${player.runs}</div></td>
+            <td><div class="score-display" id="wickets-${index}">${player.wickets}</div></td>
+            <td>
+                <div class="action-btns" id="actions-${index}">
+                    ${actionButtons}
+                </div>
+            </td>
         `;
         tbody.appendChild(row);
     });
 }
 
-function renderPlayoffBracket() {
-    const sorted = getSortedTeams();
-    const bracketDiv = document.getElementById("bracket");
+function addRun(index, runs) {
+    const player = playerScores[index];
+    if (player.isOut && player.role === "BAT") return;
+    player.runs += runs;
+    updatePlayerDisplay(index);
+}
 
-    const q1_1 = sorted[0].team;
-    const q1_2 = sorted[1].team;
-    const elim_1 = sorted[2].team;
-    const elim_2 = sorted[3].team;
+function addWicket(index) {
+    const player = playerScores[index];
+    if (player.isOut && player.role === "BAT") return;
+    player.wickets += 1;
+    updatePlayerDisplay(index);
+}
 
-    bracketDiv.innerHTML = `
-        <div style="position:relative; z-index:1;">
-            <!-- Qualifier 1 -->
-            <div class="match-box">
-                <div class="match-title">🔥 QUALIFIER 1</div>
-                <div class="team-slot">${q1_1} <span style="color:#22c55e; font-size:15px;">(1)</span></div>
-                <div class="vs-bracket">VS</div>
-                <div class="team-slot">${q1_2} <span style="color:#22c55e; font-size:15px;">(2)</span></div>
-            </div>
+function markOut(index) {
+    const player = playerScores[index];
+    if (player.isOut) return;
+   
+    player.isOut = true;
+    updatePlayerDisplay(index);
+   
+    const runBtns = document.querySelectorAll(`#actions-${index} .btn-1, #actions-${index} .btn-4, #actions-${index} .btn-6`);
+    runBtns.forEach(btn => btn.disabled = true);
+   
+    if (player.role === "BAT") {
+        const wicketBtn = document.querySelector(`#actions-${index} .btn-wicket`);
+        if (wicketBtn) wicketBtn.disabled = true;
+    }
+}
 
-            <!-- Arrow to Final -->
-            <div style="position:absolute; left:460px; top:120px; transform:rotate(25deg);">
-                <span class="flow-arrow">→</span>
-            </div>
+function updatePlayerDisplay(index) {
+    const p = playerScores[index];
+    document.getElementById(`runs-${index}`).innerText = p.runs;
+    document.getElementById(`wickets-${index}`).innerText = p.wickets;
+    calculateTotal();
+}
 
-            <!-- Eliminator -->
-            <div class="match-box" style="margin-top:120px;">
-                <div class="match-title">💥 ELIMINATOR</div>
-                <div class="team-slot">${elim_1} <span style="color:#22c55e; font-size:15px;">(3)</span></div>
-                <div class="vs-bracket">VS</div>
-                <div class="team-slot">${elim_2} <span style="color:#22c55e; font-size:15px;">(4)</span></div>
-            </div>
+function calculateTotal() {
+    let totalRuns = 0, totalWickets = 0;
+    playerScores.forEach(p => {
+        totalRuns += p.runs;
+        totalWickets += p.wickets;
+    });
+    document.getElementById("totalRuns").innerText = totalRuns;
+    document.getElementById("totalWickets").innerText = totalWickets;
+}
 
-            <!-- Arrow to Q2 -->
-            <div style="position:absolute; left:460px; top:340px; transform:rotate(-25deg);">
-                <span class="flow-arrow">→</span>
-            </div>
-        </div>
+async function downloadScorePNG() {
+    if (!currentTeam) return alert("Please select a team first!");
+   
+    if (typeof html2canvas === 'undefined') {
+        const script = document.createElement('script');
+        script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
+        document.head.appendChild(script);
+        script.onload = () => generatePNG();
+    } else {
+        generatePNG();
+    }
+}
 
-        <div style="margin-top:40px; position:relative; z-index:1;">
-            <!-- Qualifier 2 -->
-            <div class="match-box">
-                <div class="match-title">⚔️ QUALIFIER 2</div>
-                <div class="team-slot" style="opacity:0.75;">Loser of Qualifier 1</div>
-                <div class="vs-bracket">VS</div>
-                <div class="team-slot" style="opacity:0.75;">Winner of Eliminator</div>
-            </div>
-
-            <!-- Arrow to Final -->
-            <div style="position:absolute; left:460px; top:110px;">
-                <span class="flow-arrow" style="animation-delay:1s;">→</span>
-            </div>
-
-            <!-- THE FINAL -->
-            <div class="match-box final-box" style="margin-top:160px;">
-                <div class="match-title" style="color:var(--gold); font-size:22px;">🏆 THE GRAND FINAL</div>
-                <div class="team-slot" style="opacity:0.8;">Winner of Qualifier 1</div>
-                <div class="vs-bracket" style="color:var(--gold);">VS</div>
-                <div class="team-slot" style="opacity:0.8;">Winner of Qualifier 2</div>
-                <div style="margin-top:25px; padding:12px; background:rgba(255,215,0,0.15); border-radius:12px; color:var(--gold); font-weight:700; font-size:19px;">
-                    WAL 2026 CHAMPION
-                </div>
-            </div>
-        </div>
-    `;
+function generatePNG() {
+    html2canvas(document.getElementById("scorePanel"), {
+        scale: 2,
+        backgroundColor: "#0a0f1c",
+        logging: false
+    }).then(canvas => {
+        const link = document.createElement("a");
+        link.download = `${currentTeam.replace(/ /g, '_')}_WAL_Season2_Score.png`;
+        link.href = canvas.toDataURL("image/png");
+        link.click();
+        alert(`✅ ${currentTeam} Season 2 Score Sheet downloaded successfully!`);
+    });
 }
 
 // Initialize
-window.onload = function() {
-    calculateAll();
-    renderPointsTable();
-    renderPlayoffBracket();
-};
+loadTeamSelection();
+renderSchedule();
+showTab(0);
 </script>
+
+<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </body>
 </html>
