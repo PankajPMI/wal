@@ -79,6 +79,8 @@
         color: var(--primary);
         border-bottom: 1px solid rgba(0,245,255,0.2);
     }
+
+    /* Team Grid */
     .team-grid {
         display: grid;
         grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
@@ -103,45 +105,25 @@
         margin-bottom: 8px;
     }
 
-    /* Schedule Styles */
-    .round {
-        margin-bottom: 30px;
+    /* Score Panel */
+    .match-input {
+        margin: 15px 22px;
+        text-align: center;
     }
-    .round-header {
-        font-family: 'Orbitron', sans-serif;
-        font-size: 20px;
-        color: var(--primary);
-        margin-bottom: 12px;
-        padding-left: 10px;
+    .match-input label {
+        font-size: 16px;
+        margin-right: 10px;
     }
-    .match-card {
+    .match-input input {
         background: #1e2937;
-        border-radius: 16px;
-        padding: 16px 20px;
-        margin-bottom: 12px;
-        border: 1px solid rgba(0,245,255,0.15);
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        flex-wrap: wrap;
-        gap: 12px;
+        color: #67e8f9;
+        border: 1px solid #00f5ff;
+        padding: 10px 15px;
+        border-radius: 8px;
+        font-size: 16px;
+        width: 140px;
+        text-align: center;
     }
-    .match-teams {
-        display: flex;
-        align-items: center;
-        gap: 15px;
-        flex: 1;
-    }
-    .team-vs {
-        font-size: 22px;
-        font-weight: 700;
-        color: #64748b;
-    }
-    .match-info {
-        font-size: 14px;
-        opacity: 0.8;
-    }
-
     .scoring-table {
         padding: 20px;
         overflow-x: auto;
@@ -188,8 +170,6 @@
         cursor: pointer;
         color: white;
         transition: all 0.2s;
-        min-width: 55px;
-        text-align: center;
     }
     .btn-1 { background: #3b82f6; }
     .btn-4 { background: #eab308; }
@@ -232,8 +212,8 @@
         background: linear-gradient(135deg, #22c55e, #16a34a);
         color: white;
         border: none;
-        padding: 18px 60px;
-        font-size: 20px;
+        padding: 18px 50px;
+        font-size: 19px;
         font-weight: 700;
         border-radius: 50px;
         cursor: pointer;
@@ -242,9 +222,82 @@
     .submit-btn:hover {
         transform: scale(1.08);
     }
+
+    /* ==================== SAANDAR ANIMATED SCHEDULE ==================== */
+    .schedule-container {
+        padding: 30px 25px;
+    }
+    .match-card {
+        background: linear-gradient(145deg, #1e2937, #16213a);
+        border-radius: 18px;
+        padding: 22px 25px;
+        margin-bottom: 18px;
+        border: 1px solid rgba(0,245,255,0.25);
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        transition: all 0.4s ease;
+        position: relative;
+        overflow: hidden;
+    }
+    .match-card::before {
+        content: '';
+        position: absolute;
+        top: -50%;
+        left: -100%;
+        width: 50%;
+        height: 300%;
+        background: linear-gradient(120deg, transparent, rgba(0,245,255,0.18), transparent);
+        transform: skewX(-25deg);
+        transition: 0.8s;
+    }
+    .match-card:hover::before {
+        left: 150%;
+    }
+    .match-card:hover {
+        transform: translateY(-8px) scale(1.03);
+        border-color: #00f5ff;
+        box-shadow: 0 20px 40px rgba(0, 245, 255, 0.3);
+    }
+    .match-teams {
+        display: flex;
+        align-items: center;
+        gap: 25px;
+        flex: 1;
+    }
+    .team-name-schedule {
+        font-size: 19px;
+        font-weight: 700;
+        min-width: 190px;
+    }
+    .vs-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        min-width: 80px;
+    }
+    .vs {
+        font-family: 'Orbitron', sans-serif;
+        font-size: 32px;
+        font-weight: 700;
+        color: var(--accent);
+        animation: pulse 2s infinite;
+        text-shadow: 0 0 20px #ff2e63;
+    }
+    @keyframes pulse {
+        0%, 100% { opacity: 0.85; }
+        50% { opacity: 1; }
+    }
+    .match-info {
+        font-size: 14.5px;
+        opacity: 0.8;
+        text-align: right;
+        min-width: 130px;
+    }
 </style>
 </head>
 <body>
+
 <div class="header">
     <div class="logo">WAL SEASON 2</div>
     <div style="font-size:15px; opacity:0.8;">Score Panel + Schedule</div>
@@ -256,18 +309,24 @@
 </div>
 
 <div class="container">
-
     <!-- Team Score Panel -->
     <div id="scoreTab">
         <div class="box">
             <div class="box-header">🏆 SELECT YOUR TEAM (Season 2)</div>
             <div class="team-grid" id="teamGrid"></div>
         </div>
+
         <div class="box" id="scorePanel" style="display: none;">
             <div class="box-header">
                 <span id="teamTitle"></span>
                 <span style="float:right; font-size:15px; opacity:0.8;" id="remainingBudget"></span>
             </div>
+
+            <div class="match-input">
+                <label for="matchNumber">Match No :</label>
+                <input type="text" id="matchNumber" placeholder="e.g. 1, 5, Final, SF1" value="">
+            </div>
+
             <div class="scoring-table">
                 <table>
                     <thead>
@@ -291,25 +350,24 @@
                 </table>
             </div>
             <div class="submit-section">
-                <button class="submit-btn" onclick="downloadScorePNG()">
-                    ✅ SUBMIT & DOWNLOAD SCORE PNG
+                <button class="submit-btn" onclick="downloadScoreText()">
+                    ✅ SUBMIT & DOWNLOAD SCORE (TEXT)
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Schedule Tab -->
+    <!-- Saandar Animated Schedule -->
     <div id="scheduleTab" style="display: none;">
         <div class="box">
-            <div class="box-header">🔥 WAL SEASON 2 - SAANDAR SCHEDULE (6 Matches Each Team)</div>
-            <div style="padding: 25px;" id="scheduleContent"></div>
+            <div class="box-header">🔥 WAL SEASON 2 - SAANDAR FIXTURES</div>
+            <div class="schedule-container" id="scheduleContent"></div>
         </div>
     </div>
-
 </div>
 
 <script>
-// ==================== SEASON 2 TEAM DATA ====================
+// ==================== TEAM DATA ====================
 const teamsData = {
     "Dragon Hunters": {
         remaining: 0,
@@ -385,38 +443,13 @@ const teamsData = {
     }
 };
 
-// Schedule - 6 Rounds, Every team plays exactly 6 matches
 const schedule = [
-    { round: 1, matches: [
-        ["Dragon Hunters", "Blaze Warriors"],
-        ["Tiger Titans", "Shadow Ninjas"],
-        ["Phantom Raiders", "Thunder Legends"]
-    ]},
-    { round: 2, matches: [
-        ["Dragon Hunters", "Tiger Titans"],
-        ["Blaze Warriors", "Phantom Raiders"],
-        ["Shadow Ninjas", "Thunder Legends"]
-    ]},
-    { round: 3, matches: [
-        ["Dragon Hunters", "Shadow Ninjas"],
-        ["Blaze Warriors", "Thunder Legends"],
-        ["Tiger Titans", "Phantom Raiders"]
-    ]},
-    { round: 4, matches: [
-        ["Dragon Hunters", "Phantom Raiders"],
-        ["Blaze Warriors", "Tiger Titans"],
-        ["Shadow Ninjas", "Thunder Legends"]
-    ]},
-    { round: 5, matches: [
-        ["Dragon Hunters", "Thunder Legends"],
-        ["Blaze Warriors", "Shadow Ninjas"],
-        ["Tiger Titans", "Phantom Raiders"]
-    ]},
-    { round: 6, matches: [
-        ["Dragon Hunters", "Blaze Warriors"],
-        ["Tiger Titans", "Shadow Ninjas"],
-        ["Phantom Raiders", "Thunder Legends"]
-    ]}
+    { round: 1, matches: [["Dragon Hunters", "Blaze Warriors"], ["Tiger Titans", "Shadow Ninjas"], ["Phantom Raiders", "Thunder Legends"]] },
+    { round: 2, matches: [["Dragon Hunters", "Tiger Titans"], ["Blaze Warriors", "Phantom Raiders"], ["Shadow Ninjas", "Thunder Legends"]] },
+    { round: 3, matches: [["Dragon Hunters", "Shadow Ninjas"], ["Blaze Warriors", "Thunder Legends"], ["Tiger Titans", "Phantom Raiders"]] },
+    { round: 4, matches: [["Dragon Hunters", "Phantom Raiders"], ["Blaze Warriors", "Tiger Titans"], ["Shadow Ninjas", "Thunder Legends"]] },
+    { round: 5, matches: [["Dragon Hunters", "Thunder Legends"], ["Blaze Warriors", "Shadow Ninjas"], ["Tiger Titans", "Phantom Raiders"]] },
+    { round: 6, matches: [["Dragon Hunters", "Blaze Warriors"], ["Tiger Titans", "Shadow Ninjas"], ["Phantom Raiders", "Thunder Legends"]] }
 ];
 
 let currentTeam = null;
@@ -426,28 +459,32 @@ let playerScores = [];
 function showTab(tab) {
     document.getElementById('scoreTab').style.display = tab === 0 ? 'block' : 'none';
     document.getElementById('scheduleTab').style.display = tab === 1 ? 'block' : 'none';
-    
-    document.querySelectorAll('.tab').forEach((t, i) => {
-        t.classList.toggle('active', i === tab);
-    });
+    document.querySelectorAll('.tab').forEach((t, i) => t.classList.toggle('active', i === tab));
 }
 
-// Render Schedule
+// Render Animated Schedule
 function renderSchedule() {
     let html = '';
-    schedule.forEach(round => {
-        html += `<div class="round">
-            <div class="round-header">ROUND ${round.round} 🔥</div>`;
-        
-        round.matches.forEach(match => {
+    schedule.forEach((roundData, roundIndex) => {
+        html += `<div style="margin-bottom: 40px;">
+            <div style="font-family: Orbitron; font-size: 23px; color: var(--primary); text-align: center; margin-bottom: 18px;">
+                ROUND ${roundData.round}
+            </div>`;
+
+        roundData.matches.forEach((match, idx) => {
             html += `
             <div class="match-card">
                 <div class="match-teams">
-                    <strong>${match[0]}</strong>
-                    <span class="team-vs">VS</span>
-                    <strong>${match[1]}</strong>
+                    <div class="team-name-schedule">${match[0]}</div>
+                    <div class="vs-container">
+                        <div class="vs">VS</div>
+                    </div>
+                    <div class="team-name-schedule">${match[1]}</div>
                 </div>
-                <div class="match-info">Match ${round.round} • Season 2</div>
+                <div class="match-info">
+                    Match ${roundData.round}.${idx+1}<br>
+                    <span style="color:#00f5ff;">Season 2</span>
+                </div>
             </div>`;
         });
         html += `</div>`;
@@ -477,8 +514,8 @@ function selectTeam(team) {
     document.getElementById("scorePanel").style.display = "block";
     document.getElementById("teamTitle").innerText = team + " (Season 2)";
     document.getElementById("remainingBudget").innerText = `🪙 ${teamsData[team].remaining}L Remaining`;
-   
-    // Sort players: BAT → ALL → BALL
+    document.getElementById("matchNumber").value = "";
+
     const sortedPlayers = [...teamsData[team].players].sort((a, b) => {
         const order = { "BAT": 1, "ALL": 2, "BALL": 3 };
         return order[a.role] - order[b.role];
@@ -491,39 +528,33 @@ function selectTeam(team) {
         wickets: 0,
         isOut: false
     }));
+
     renderScoreTable();
 }
 
 function renderScoreTable() {
     const tbody = document.getElementById("tableBody");
     tbody.innerHTML = "";
-   
+
     playerScores.forEach((player, index) => {
         const isBowler = player.role === "BALL" || player.role === "ALL";
-       
         let actionButtons = `
             <button class="action-btn btn-1" onclick="addRun(${index}, 1)">+1</button>
             <button class="action-btn btn-4" onclick="addRun(${index}, 4)">+4</button>
             <button class="action-btn btn-6" onclick="addRun(${index}, 6)">+6</button>
         `;
-       
         if (isBowler) {
             actionButtons += `<button class="action-btn btn-wicket" onclick="addWicket(${index})">WICKET</button>`;
         }
-       
         actionButtons += `<button class="action-btn btn-out" onclick="markOut(${index})">OUT</button>`;
 
         const row = document.createElement("tr");
         row.innerHTML = `
             <td class="player-name ${player.isOut ? 'player-out' : ''}">${player.name}</td>
             <td><span class="role ${player.role}">${player.role}</span></td>
-            <td><div class="score-display ${player.isOut && player.role === 'BAT' ? 'player-out' : ''}" id="runs-${index}">${player.runs}</div></td>
+            <td><div class="score-display" id="runs-${index}">${player.runs}</div></td>
             <td><div class="score-display" id="wickets-${index}">${player.wickets}</div></td>
-            <td>
-                <div class="action-btns" id="actions-${index}">
-                    ${actionButtons}
-                </div>
-            </td>
+            <td><div class="action-btns" id="actions-${index}">${actionButtons}</div></td>
         `;
         tbody.appendChild(row);
     });
@@ -546,13 +577,12 @@ function addWicket(index) {
 function markOut(index) {
     const player = playerScores[index];
     if (player.isOut) return;
-   
     player.isOut = true;
     updatePlayerDisplay(index);
-   
+
     const runBtns = document.querySelectorAll(`#actions-${index} .btn-1, #actions-${index} .btn-4, #actions-${index} .btn-6`);
     runBtns.forEach(btn => btn.disabled = true);
-   
+
     if (player.role === "BAT") {
         const wicketBtn = document.querySelector(`#actions-${index} .btn-wicket`);
         if (wicketBtn) wicketBtn.disabled = true;
@@ -576,31 +606,44 @@ function calculateTotal() {
     document.getElementById("totalWickets").innerText = totalWickets;
 }
 
-async function downloadScorePNG() {
-    if (!currentTeam) return alert("Please select a team first!");
-   
-    if (typeof html2canvas === 'undefined') {
-        const script = document.createElement('script');
-        script.src = "https://html2canvas.hertzen.com/dist/html2canvas.min.js";
-        document.head.appendChild(script);
-        script.onload = () => generatePNG();
-    } else {
-        generatePNG();
+// Download Score as Text
+function downloadScoreText() {
+    if (!currentTeam) {
+        alert("Please select a team first!");
+        return;
     }
-}
+    const matchNo = document.getElementById("matchNumber").value.trim() || "N/A";
 
-function generatePNG() {
-    html2canvas(document.getElementById("scorePanel"), {
-        scale: 2,
-        backgroundColor: "#0a0f1c",
-        logging: false
-    }).then(canvas => {
-        const link = document.createElement("a");
-        link.download = `${currentTeam.replace(/ /g, '_')}_WAL_Season2_Score.png`;
-        link.href = canvas.toDataURL("image/png");
-        link.click();
-        alert(`✅ ${currentTeam} Season 2 Score Sheet downloaded successfully!`);
+    let textContent = `🏆 WAL SEASON 2 - SCORE SHEET\n`;
+    textContent += `══════════════════════════════════════\n`;
+    textContent += `TEAM      : ${currentTeam}\n`;
+    textContent += `MATCH NO  : ${matchNo}\n`;
+    textContent += `══════════════════════════════════════\n\n`;
+
+    textContent += `PLAYER NAME           ROLE     RUNS    WICKETS   STATUS\n`;
+    textContent += `──────────────────────────────────────────────────────────────\n`;
+
+    let totalRuns = 0, totalWickets = 0;
+    playerScores.forEach(player => {
+        const status = player.isOut ? "OUT" : "NOT OUT";
+        textContent += `${player.name.padEnd(20)} ${player.role.padEnd(6)} ${String(player.runs).padStart(4)}     ${String(player.wickets).padStart(4)}     ${status}\n`;
+        totalRuns += player.runs;
+        totalWickets += player.wickets;
     });
+
+    textContent += `──────────────────────────────────────────────────────────────\n`;
+    textContent += `TOTAL                 -       ${totalRuns}      ${totalWickets}\n\n`;
+    textContent += `══════════════════════════════════════\n`;
+    textContent += `✅ Submitted via WAL Season 2 Score Panel\n`;
+
+    const blob = new Blob([textContent], { type: "text/plain;charset=utf-8" });
+    const link = document.createElement("a");
+    link.href = URL.createObjectURL(blob);
+    link.download = `${currentTeam.replace(/ /g, '_')}_Match${matchNo}_WAL_Season2.txt`;
+    link.click();
+    URL.revokeObjectURL(link.href);
+
+    alert(`✅ ${currentTeam} - Match ${matchNo} Score Sheet downloaded successfully!`);
 }
 
 // Initialize
@@ -608,7 +651,5 @@ loadTeamSelection();
 renderSchedule();
 showTab(0);
 </script>
-
-<script src="https://html2canvas.hertzen.com/dist/html2canvas.min.js"></script>
 </body>
 </html>
